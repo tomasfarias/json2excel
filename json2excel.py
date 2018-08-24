@@ -13,8 +13,11 @@ if __name__ == '__main__':
     parser.add_argument(
         '-n', '--name', help='file name for the exported Excel/CSV, without extension (default: result)', type=str, default='result'
     )
+    parser.add_argument(
+        '-s', '--sep', help='separator to use for the CSV file (default: ,)', type=str, default=','
+    )
 
     args = parser.parse_args()
 
     convert = Converter(args.json_file, args.csv, args.name)
-    convert.convert()
+    convert.convert(csv_sep=args.sep)
