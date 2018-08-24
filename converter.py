@@ -6,6 +6,10 @@ from itertools import zip_longest
 from openpyxl import Workbook
 
 class Converter:
+    """
+        Converts JSON file to Excel or CSV file. Nested structures are flattened
+        by recursively appending lists of values.
+    """
 
     def __init__(self, json_file=None, csv=False, name='result'):
         if json_file is not None:
@@ -19,18 +23,32 @@ class Converter:
 
     @json_file.setter
     def json_file(self, file):
+        """
+            Setting property handles reading JSON file into instance attribute.
+
+            Arguments:
+                file (str): file name or path to file. Will be used to initialize
+                    a pathlib.Path object.
+        """
         p = Path(file)
         if p.suffix != '.json':
             p = p.with_suffix('.json')
         with p.open(encoding='utf-8') as f:
             self._json_file = json.load(f)
 
-    def convert(self):
+    def convert(self, csv_sep=','):
+        """
+            Converts JSON file to either Excel or CSV file, depending on
+            self.csv state. File is saved to self.name
+
+            Arguments:
+                csv_sep (str): CSV delimiter, for example ',' or ';'.
+        """
         long_list = zip_longest(*recursive_list_of_lists(self.json_file))
         if self.csv == True:
             filename = f'{self.name}.csv'
             with open(filename, 'w', newline='') as csvfile:
-                writer = csv.writer(csvfile)
+                writer = csv.writer(csvfile, delimiter=csv_sep)
                 for l in long_list:
                     writer.writerow(l)
         else:
