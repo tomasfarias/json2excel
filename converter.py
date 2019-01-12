@@ -21,6 +21,9 @@ class Converter:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """
+        Tries to delete the output file if there were any errors.
+        """
         if exc_type is not None:
             try:
                 self.output.unlink()
@@ -54,6 +57,9 @@ class Converter:
         Arguments:
             csv_sep (str): CSV delimiter, for example ',' or ';'.
             helper (dict): See recursive_dict_of_lists.
+        Raises:
+            ValueError when self.output has a suffix pointing to an unsupported
+                file format.
         """
         flattened = recursive_dict_of_lists(self.input, helper)
 
