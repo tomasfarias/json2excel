@@ -5,59 +5,80 @@ from itertools import zip_longest
 
 from openpyxl import Workbook
 
+
 class Converter:
     """
         Converts JSON file to Excel or CSV file. Nested structures are flattened
         by recursively appending lists of values.
     """
 
-    def __init__(self, json_file=None, csv=False, name='result'):
-        if json_file is not None:
-            self.json_file = json_file
-        self.csv = csv
+    def __init__(self, file=None, export_format='csv', name='result'):
+        if file is not None:
+            self.file = file
+        self.export_format = export_format
         self.name = name
-    
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        filename = f'{self.name}.{self.export_format}'
+        p = Path(filename)
+
+        if exc_type is not None:
+            try:
+                p.unlink()
+            except FileNotFoundError:
+                pass
+            return False
+
     @property
-    def json_file(self):
-        return self._json_file
+    def file(self):
+        return self._file
 
-    @json_file.setter
-    def json_file(self, file):
+    @file.setter
+    def file(self, file):
         """
-            Setting property handles reading JSON file into instance attribute.
+        Setting property handles reading JSON file into instance attribute.
 
-            Arguments:
-                file (str): file name or path to file. Will be used to initialize
-                    a pathlib.Path object.
+        Arguments:
+            file (str): file name or path to file. Will be used to initialize
+                a pathlib.Path object.
         """
         p = Path(file)
-        if p.suffix != '.json':
+        if p.suffix == '':
             p = p.with_suffix('.json')
+
         with p.open(encoding='utf-8') as f:
-            self._json_file = json.load(f)
+            self._file = json.load(f)
 
     def convert(self, csv_sep=','):
         """
-            Converts JSON file to either Excel or CSV file, depending on
-            self.csv state. File is saved to self.name
+        Converts JSON file to either Excel or CSV file, depending on
+        self.csv state. File is saved to self.name
 
-            Arguments:
-                csv_sep (str): CSV delimiter, for example ',' or ';'.
+        Arguments:
+            csv_sep (str): CSV delimiter, for example ',' or ';'.
         """
-        long_list = zip_longest(*recursive_list_of_lists(self.json_file))
-        if self.csv == True:
-            filename = f'{self.name}.csv'
+        long_list = zip_longest(*recursive_list_of_lists(self.file))
+        filename = f'{self.name}.{self.export_format}'
+
+        if self.export_format == 'csv':
             with open(filename, 'w', newline='') as csvfile:
                 writer = csv.writer(csvfile, delimiter=csv_sep)
                 for l in long_list:
                     writer.writerow(l)
-        else:
-            filename = f'{self.name}.xlsx'
+
+        elif self.export_format == 'xlsx':
             wb = Workbook()
             ws = wb.active
             for row in long_list:
                     ws.append(row)
             wb.save(filename)
+
+        else:
+            raise ValueError(f"Unsupported export_format {self.export_format}. Use 'csv' or 'xlsx'")
+
 
 def recursive_keys(d):
     keys = []
@@ -68,6 +89,7 @@ def recursive_keys(d):
             keys.append(k)
     return keys
 
+
 def recursive_values(d):
     values = []
     for k in d.keys():
@@ -76,6 +98,7 @@ def recursive_values(d):
         else:
             values.append(d[k])
     return values
+
 
 def recursive_dict(d, prev_key=None):
     dic = {}
@@ -89,6 +112,7 @@ def recursive_dict(d, prev_key=None):
                 new_key = k
             dic[new_key] = d[k]
     return dic
+
 
 def recursive_list_of_lists(d, prev_key=None):
     list_ = []
