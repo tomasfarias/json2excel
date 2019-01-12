@@ -21,7 +21,23 @@ python -m pip install -r requirements.txt
 
 # Running tests
 
-TODO
+Test file is located in tests directory and written using `pytest`. Add your current directory to PYTHONPATH first:
+
+In Windows:
+```
+set PYTHONPATH=%cd%
+```
+
+In bash:
+```
+export PYTHONPATH=$pwd
+```
+
+Then run the tests:
+
+```
+pytest tests
+```
 
 # Author
 
@@ -29,4 +45,4 @@ TODO
 
 # License
 
-TODO
+Standard MIT License.
