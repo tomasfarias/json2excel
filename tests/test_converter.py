@@ -59,7 +59,7 @@ def file_path_help():
 
 
 def test_export_to_csv(file_path):
-    with Converter(file_path, 'csv', 'result') as c:
+    with Converter(file_path, 'result.csv') as c:
         c.convert()
 
     with open('result.csv', 'r') as fp:
@@ -80,7 +80,7 @@ def test_export_to_csv(file_path):
 
 
 def test_export_to_xlsx(file_path):
-    with Converter(file_path, 'xlsx', 'result') as c:
+    with Converter(file_path, 'result.xlsx') as c:
         c.convert()
 
     wb = load_workbook(filename='result.xlsx')
@@ -107,7 +107,7 @@ def test_export_to_csv_with_helper(file_path_help):
         'key': 'key',
         'value': 'value'
     }
-    with Converter(file_path_help, 'csv', 'result') as c:
+    with Converter(file_path_help, 'result.csv') as c:
         c.convert(helper=helper)
 
     with open('result.csv', 'r') as fp:
@@ -135,7 +135,7 @@ def test_export_to_xlsx_with_helper(file_path_help):
         'key': 'key',
         'value': 'value'
     }
-    with Converter(file_path_help, 'xlsx', 'result') as c:
+    with Converter(file_path_help, 'result.xlsx') as c:
         c.convert(helper=helper)
 
     wb = load_workbook(filename='result.xlsx')

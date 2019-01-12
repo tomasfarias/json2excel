@@ -12,45 +12,39 @@ class Converter:
     by recursively appending lists of values.
     """
 
-    def __init__(self, file=None, export_format='csv', name='result'):
-        if file is not None:
-            self.file = file
-        self.export_format = export_format
-        self.name = name
+    def __init__(self, input_file=None, output_file='result.csv'):
+        if input_file is not None:
+            self.input = Path(input_file)
+        self.output = Path(output_file)
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        filename = f'{self.name}.{self.export_format}'
-        p = Path(filename)
-
         if exc_type is not None:
             try:
-                p.unlink()
+                self.output.unlink()
             except FileNotFoundError:
                 pass
             return False
 
     @property
-    def file(self):
-        return self._file
+    def input(self):
+        return self._input
 
-    @file.setter
-    def file(self, file):
+    @input.setter
+    def input(self, input_path):
         """
         Setting property handles reading JSON file into instance attribute.
 
         Arguments:
-            file (str): file name or path to file. Will be used to initialize
-                a pathlib.Path object.
+            input_path (pathlib.Path): path to file.
         """
-        p = Path(file)
-        if p.suffix == '':
-            p = p.with_suffix('.json')
+        if input_path.suffix == '':
+            input_path = input_path.with_suffix('.json')
 
-        with p.open(encoding='utf-8') as f:
-            self._file = json.load(f)
+        with input_path.open(encoding='utf-8') as f:
+            self._input = json.load(f)
 
     def convert(self, csv_sep=',', helper=None):
         """
@@ -61,25 +55,24 @@ class Converter:
             csv_sep (str): CSV delimiter, for example ',' or ';'.
             helper (dict): See recursive_dict_of_lists.
         """
-        flattened = recursive_dict_of_lists(self.file, helper)
-        filename = f'{self.name}.{self.export_format}'
+        flattened = recursive_dict_of_lists(self.input, helper)
 
-        if self.export_format == 'csv':
-            with open(filename, 'w', newline='') as csvfile:
+        if self.output.suffix == '.csv':
+            with open(self.output, 'w', newline='') as csvfile:
                 writer = csv.writer(csvfile, delimiter=csv_sep)
                 writer.writerow(flattened.keys())
                 writer.writerows(zip_longest(*flattened.values()))
 
-        elif self.export_format == 'xlsx':
+        elif self.output.suffix == '.xlsx':
             wb = Workbook()
             ws = wb.active
             ws.append((_ for _ in flattened.keys()))  # doesn't take dict_keys ...
             for row in zip_longest(*flattened.values()):
                     ws.append(row)
-            wb.save(filename)
+            wb.save(self.output)
 
         else:
-            raise ValueError(f"Unsupported export_format {self.export_format}. Use 'csv' or 'xlsx'")
+            raise ValueError(f"Unsupported format {self.output.suffix}. Use 'csv' or 'xlsx'")
 
 
 def recursive_dict_of_lists(d, helper=None, prev_key=None):
