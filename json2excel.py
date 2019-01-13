@@ -7,19 +7,18 @@ if __name__ == '__main__':
         description='Transform a JSON file into Excel or Excel-formatted CSV'
     )
     parser.add_argument(
-        '--file', type=str, help='a json or json-like file path'
+        '-i', '--input-file', type=str, help='a json or json-like input file path'
     )
     parser.add_argument(
-        '--format', help='export format: csv or xlsx (default: csv)', type=str, default='csv'
+        '-o', '--ouput-file', type=str, default='result.csv',
+        help="output file path, format is inferred by suffix (.csv or .xlsx) (default: 'result.csv')",
     )
     parser.add_argument(
-        '-n', '--name', help='file name for the exported Excel/CSV, without extension (default: result)', type=str, default='result'
-    )
-    parser.add_argument(
-        '-s', '--sep', help='separator to use for the CSV file (default: ,)', type=str, default=','
+        '-s', '--separator', type=str, default=',',
+        help='separator to use for the CSV file (default: ,)'
     )
 
     args = parser.parse_args()
 
-    with Converter(args.file, args.format, args.name) as c:
-        c.convert(csv_sep=args.sep)
+    with Converter(args['input-file'], args['ouput-file']) as c:
+        c.convert(csv_sep=args.separator)
